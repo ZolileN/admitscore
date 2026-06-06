@@ -8,9 +8,9 @@ export const metadata: Metadata = {
   description: "Explore entry requirements for 70+ programs across UCT, Wits, UP, UJ, and Stellenbosch. Find the APS score and subjects you need.",
 };
 
-export default function RequirementsPage() {
-  const allUnis = db.select().from(universities).all();
-  const allProgs = db.select().from(programs).all();
+export default async function RequirementsPage() {
+  const allUnis = await db.select().from(universities);
+  const allProgs = await db.select().from(programs);
 
   // Group programs by university
   const uniPrograms = new Map<number, number>();

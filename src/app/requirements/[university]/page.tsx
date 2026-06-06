@@ -10,13 +10,13 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  const unis = db.select({ slug: universities.slug }).from(universities).all();
+  const unis = await db.select({ slug: universities.slug }).from(universities);
   return unis.map((u) => ({ university: u.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { university } = await params;
-  const uniRows = db.select().from(universities).where(eq(universities.slug, university)).all();
+  const uniRows = await db.select().from(universities).where(eq(universities.slug, university));
   if (uniRows.length === 0) return { title: "University Not Found — AdmitScore" };
   const uni = uniRows[0];
   return {
@@ -27,12 +27,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function UniversityPage({ params }: Props) {
   const { university } = await params;
-  const uniRows = db.select().from(universities).where(eq(universities.slug, university)).all();
+  const uniRows = await db.select().from(universities).where(eq(universities.slug, university));
   if (uniRows.length === 0) notFound();
   const uni = uniRows[0];
 
-  const uniPrograms = db.select().from(programs).where(eq(programs.universityId, uni.id)).all();
-  const allApsRules = db.select().from(programApsRules).all();
+  const uniPrograms = await db.select().from(programs).where(eq(programs.universityId, uni.id));
+  const allApsRules = await db.select().from(programApsRules);
   const apsMap = new Map(allApsRules.map(r => [r.programId, r]));
 
   // Group by faculty

@@ -11,8 +11,8 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  const allProgs = db.select({ slug: programs.slug, uniId: programs.universityId }).from(programs).all();
-  const allUnis = db.select().from(universities).all();
+  const allProgs = await db.select({ slug: programs.slug, uniId: programs.universityId }).from(programs);
+  const allUnis = await db.select().from(universities);
   const uniMap = new Map(allUnis.map(u => [u.id, u.slug]));
   return allProgs.map((p) => ({
     university: uniMap.get(p.uniId) || "",
@@ -22,10 +22,10 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { university, program: programSlug } = await params;
-  const uniRows = db.select().from(universities).where(eq(universities.slug, university)).all();
+  const uniRows = await db.select().from(universities).where(eq(universities.slug, university));
   if (uniRows.length === 0) return { title: "Not Found — AdmitScore" };
   const uni = uniRows[0];
-  const progRows = db.select().from(programs).where(and(eq(programs.universityId, uni.id), eq(programs.slug, programSlug))).all();
+  const progRows = await db.select().from(programs).where(and(eq(programs.universityId, uni.id), eq(programs.slug, programSlug)));
   if (progRows.length === 0) return { title: "Not Found — AdmitScore" };
   const prog = progRows[0];
   return {
@@ -37,19 +37,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProgramPage({ params }: Props) {
   const { university, program: programSlug } = await params;
 
-  const uniRows = db.select().from(universities).where(eq(universities.slug, university)).all();
+  const uniRows = await db.select().from(universities).where(eq(universities.slug, university));
   if (uniRows.length === 0) notFound();
   const uni = uniRows[0];
 
-  const progRows = db.select().from(programs).where(and(eq(programs.universityId, uni.id), eq(programs.slug, programSlug))).all();
+  const progRows = await db.select().from(programs).where(and(eq(programs.universityId, uni.id), eq(programs.slug, programSlug)));
   if (progRows.length === 0) notFound();
   const prog = progRows[0];
 
-  const apsRuleRows = db.select().from(programApsRules).where(eq(programApsRules.programId, prog.id)).all();
+  const apsRuleRows = await db.select().from(programApsRules).where(eq(programApsRules.programId, prog.id));
   const apsRule = apsRuleRows.length > 0 ? apsRuleRows[0] : null;
 
-  const subjectRuleRows = db.select().from(programSubjectRules).where(eq(programSubjectRules.programId, prog.id)).all();
-  const allSubjects = db.select().from(subjects).all();
+  const subjectRuleRows = await db.select().from(programSubjectRules).where(eq(programSubjectRules.programId, prog.id));
+  const allSubjects = await db.select().from(subjects);
   const subjectMap = new Map(allSubjects.map(s => [s.id, s]));
 
   const rulesWithSubjects = subjectRuleRows.map(r => ({

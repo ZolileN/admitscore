@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Calculate student APS (exclude LO, best 6) ──────
-    const loRows = db.select({ id: subjects.id }).from(subjects).where(eq(subjects.slug, "life-orientation")).all();
+    const loRows = await db.select({ id: subjects.id }).from(subjects).where(eq(subjects.slug, "life-orientation"));
     const loId = loRows.length > 0 ? loRows[0].id : undefined;
 
     const allLevels: number[] = [];
@@ -43,11 +43,11 @@ export async function POST(request: NextRequest) {
     const studentAps = allLevels.slice(0, 6).reduce((sum, l) => sum + l, 0);
 
     // ── Fetch all programs ───────────────────────────────
-    const allProgramRows = db.select().from(programs).all();
-    const allUniRows = db.select().from(universities).all();
-    const allApsRules = db.select().from(programApsRules).all();
-    const allSubjectRules = db.select().from(programSubjectRules).all();
-    const allSubjects = db.select().from(subjects).all();
+    const allProgramRows = await db.select().from(programs);
+    const allUniRows = await db.select().from(universities);
+    const allApsRules = await db.select().from(programApsRules);
+    const allSubjectRules = await db.select().from(programSubjectRules);
+    const allSubjects = await db.select().from(subjects);
 
     // Build lookup maps
     const uniMap = new Map(allUniRows.map(u => [u.id, u]));

@@ -4,7 +4,7 @@ import { subjects } from "@/db/schema";
 
 export async function GET() {
   try {
-    const allSubjects = db.select().from(subjects).all();
+    const allSubjects = await db.select().from(subjects);
     return NextResponse.json(allSubjects);
   } catch (error) {
     console.error("Subjects API error:", error);
