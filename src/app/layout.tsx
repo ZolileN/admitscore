@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "AdmitScore — South Africa's Free APS Calculator & University Matcher",
   description:
-    "Check your APS score and instantly see which South African university programs you qualify for. Free, fast, and mobile-friendly. Covers UCT, Wits, UP, UJ & Stellenbosch.",
+    "Check your APS score and instantly see which South African university programs you qualify for. Free, fast, and mobile-friendly. Covers UCT, Wits, UP, UJ, Stellenbosch & UNISA.",
   keywords: [
     "APS calculator",
     "South Africa university",
@@ -16,11 +16,12 @@ export const metadata: Metadata = {
     "UP requirements",
     "UJ requirements",
     "Stellenbosch requirements",
+    "UNISA requirements",
   ],
   openGraph: {
     title: "AdmitScore — Know Where You Stand. Instantly.",
     description:
-      "South Africa's free APS calculator and admissions matching engine. Check your eligibility for 70+ programs across top SA universities in seconds.",
+      "South Africa's free APS calculator and admissions matching engine. Check your eligibility for programs across top SA universities in seconds.",
     type: "website",
     locale: "en_ZA",
   },

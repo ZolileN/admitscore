@@ -69,6 +69,7 @@ export default async function UniversityPage({ params }: Props) {
             </h1>
             <p style={{ color: "var(--text-secondary)" }}>
               {uni.province} · {uniPrograms.length} programs
+              {uni.slug === "unisa" && " · Distance learning"}
               {uni.websiteUrl && (
                 <> · <a href={uni.websiteUrl} target="_blank" rel="noopener noreferrer" className="no-underline hover:underline" style={{ color: "var(--accent-blue)" }}>{uni.websiteUrl.replace("https://", "")}</a></>
               )}
