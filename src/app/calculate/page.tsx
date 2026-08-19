@@ -145,7 +145,7 @@ export default function CalculatePage() {
           return (
             <div
               key={entry.id}
-              className="glass-card-static p-4 animate-scale-in"
+              className={`glass-card-static p-4 animate-scale-in${activeCombobox === entry.id ? " combobox-active" : ""}`}
               style={{ animationDelay: `${index * 0.03}s` }}
             >
               <div className="flex items-start gap-3">
