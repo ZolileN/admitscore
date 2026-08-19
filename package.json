@@ -9,7 +9,7 @@
     "lint": "eslint",
     "db:seed": "tsx src/db/seed.ts",
     "db:push": "drizzle-kit push",
-    "db:setup": "drizzle-kit push && tsx src/db/seed.ts"
+    "db:setup": "bash scripts/sync-env-local.sh && drizzle-kit push && tsx src/db/seed.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.3",
