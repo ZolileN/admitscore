@@ -3,7 +3,7 @@
 export const APP_NAME = "AdmitScore";
 export const APP_TAGLINE = "Know Where You Stand. Instantly.";
 export const APP_DESCRIPTION =
-  "South Africa's free APS calculator and university admissions matching engine. Check your eligibility for 80+ programs across top SA universities in seconds.";
+  "South Africa's free APS calculator and university admissions matching engine. Check your eligibility for programs across UCT, Wits, UP, UJ, Stellenbosch, UNISA, and more in seconds.";
 
 export const SITE_URL = "https://admitscore.co.za";
 

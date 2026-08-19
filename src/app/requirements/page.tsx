@@ -1,22 +1,22 @@
 import Link from "next/link";
-import { db } from "@/db";
-import { universities, programs } from "@/db/schema";
+import RequirementsGrid from "@/components/RequirementsGrid";
+import { getSiteStats, getUniversitiesWithProgramCounts } from "@/lib/stats";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Browse University Requirements — AdmitScore",
-  description: "Explore entry requirements for 70+ programs across UCT, Wits, UP, UJ, and Stellenbosch. Find the APS score and subjects you need.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { universityCount, programCount } = await getSiteStats();
+
+  return {
+    title: "Browse University Requirements — AdmitScore",
+    description: `Explore entry requirements for ${programCount}+ programs across ${universityCount} South African universities including UCT, Wits, UP, UJ, Stellenbosch, and UNISA.`,
+  };
+}
 
 export default async function RequirementsPage() {
-  const allUnis = await db.select().from(universities);
-  const allProgs = await db.select().from(programs);
-
-  // Group programs by university
-  const uniPrograms = new Map<number, number>();
-  for (const p of allProgs) {
-    uniPrograms.set(p.universityId, (uniPrograms.get(p.universityId) || 0) + 1);
-  }
+  const [{ universityCount, programCount }, universities] = await Promise.all([
+    getSiteStats(),
+    getUniversitiesWithProgramCounts(),
+  ]);
 
   return (
     <main className="min-h-screen">
@@ -34,42 +34,16 @@ export default async function RequirementsPage() {
         <h1 className="text-3xl sm:text-4xl font-bold mb-2" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')" }}>
           University Requirements
         </h1>
-        <p style={{ color: "var(--text-secondary)" }} className="text-base mb-8">
+        <p style={{ color: "var(--text-secondary)" }} className="text-base mb-2">
           Browse entry requirements for South Africa&apos;s top universities. Click any university to see all programs.
+        </p>
+        <p className="text-sm mb-8" style={{ color: "var(--text-muted)" }}>
+          {programCount} programs across {universityCount} universities
         </p>
       </section>
 
       <section className="container-wide pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 stagger-children">
-          {allUnis.map((uni) => {
-            const progCount = uniPrograms.get(uni.id) || 0;
-            return (
-              <Link
-                key={uni.slug}
-                href={`/requirements/${uni.slug}`}
-                className="glass-card p-6 no-underline block group"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold" style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15))", color: "var(--accent-blue)" }}>
-                    {uni.name.split(" ").map(w => w[0]).join("").slice(0, 3)}
-                  </div>
-                  <span className="text-xs px-3 py-1 rounded-full" style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)" }}>
-                    {uni.province}
-                  </span>
-                </div>
-                <h2 className="text-lg font-bold mb-1 group-hover:text-blue-400 transition-colors" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')", color: "var(--text-primary)" }}>
-                  {uni.name}
-                </h2>
-                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                  {progCount} program{progCount !== 1 ? "s" : ""} available
-                </p>
-                <div className="mt-4 flex items-center text-sm font-medium" style={{ color: "var(--accent-blue)" }}>
-                  View Programs →
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <RequirementsGrid universities={universities} />
       </section>
     </main>
   );

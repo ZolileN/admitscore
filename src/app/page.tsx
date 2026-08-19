@@ -1,6 +1,13 @@
 import Link from "next/link";
+import { getSiteStats, getUniversitiesWithProgramCounts } from "@/lib/stats";
+import { getUniversityAbbreviation } from "@/lib/universities";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [{ universityCount, programCount }, universities] = await Promise.all([
+    getSiteStats(),
+    getUniversitiesWithProgramCounts(),
+  ]);
+
   return (
     <main className="min-h-screen">
       {/* ── Navigation ──────────────────────────────────── */}
@@ -19,7 +26,6 @@ export default function HomePage() {
 
       {/* ── Hero Section ────────────────────────────────── */}
       <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
-        {/* Animated orbs */}
         <div className="absolute top-20 left-1/4 w-72 h-72 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #3b82f6, transparent)" }} />
         <div className="absolute bottom-10 right-1/4 w-56 h-56 rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #8b5cf6, transparent)" }} />
 
@@ -40,7 +46,7 @@ export default function HomePage() {
           </h1>
 
           <p className="text-lg sm:text-xl max-w-2xl mx-auto mb-10 animate-fade-in-up" style={{ color: "var(--text-secondary)", animationDelay: "0.2s", opacity: 0 }}>
-            Enter your matric marks. Get matched to 70+ programs across South Africa&apos;s top universities. No sign-up. No fees. No nonsense.
+            Enter your matric marks. Get matched to {programCount}+ programs across South Africa&apos;s top universities. No sign-up. No fees. No nonsense.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: "0.3s", opacity: 0 }}>
@@ -66,7 +72,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-children">
             {[
               { step: "01", icon: "✏️", title: "Enter Your Marks", desc: "Type in your matric subjects and percentages. Our smart numpad keeps it fast." },
-              { step: "02", icon: "⚡", title: "Get Instant Matches", desc: "Our engine checks you against 70+ programs and sorts results by eligibility." },
+              { step: "02", icon: "⚡", title: "Get Instant Matches", desc: `Our engine checks you against ${programCount}+ programs and sorts results by eligibility.` },
               { step: "03", icon: "🎯", title: "Know Your Options", desc: "See Safe Bets, Exact Matches, and what to improve for Near Misses." },
             ].map((item) => (
               <div key={item.step} className="glass-card p-8 text-center group">
@@ -87,9 +93,9 @@ export default function HomePage() {
             Covering South Africa&apos;s Top Universities
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
-            {["UCT", "Wits", "UP", "UJ", "Stellenbosch"].map((uni) => (
-              <div key={uni} className="text-xl sm:text-2xl font-bold tracking-tight transition-colors duration-200 cursor-default" style={{ color: "var(--text-muted)", fontFamily: "var(--font-heading, 'Space Grotesk')" }}>
-                {uni}
+            {universities.map((uni) => (
+              <div key={uni.slug} className="text-xl sm:text-2xl font-bold tracking-tight transition-colors duration-200 cursor-default" style={{ color: "var(--text-muted)", fontFamily: "var(--font-heading, 'Space Grotesk')" }}>
+                {getUniversityAbbreviation(uni.slug, uni.name)}
               </div>
             ))}
           </div>
@@ -101,8 +107,8 @@ export default function HomePage() {
         <div className="container-wide">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { value: "70+", label: "Programs" },
-              { value: "5", label: "Universities" },
+              { value: `${programCount}+`, label: "Programs" },
+              { value: String(universityCount), label: "Universities" },
               { value: "100%", label: "Free" },
               { value: "<2s", label: "Match Speed" },
             ].map((stat) => (

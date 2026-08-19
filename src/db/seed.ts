@@ -49,6 +49,7 @@ async function seed() {
     { name: "University of Pretoria", slug: "up", province: "Gauteng", websiteUrl: "https://up.ac.za", apsSystemType: "standard" },
     { name: "University of Johannesburg", slug: "uj", province: "Gauteng", websiteUrl: "https://uj.ac.za", apsSystemType: "standard" },
     { name: "Stellenbosch University", slug: "stellenbosch", province: "Western Cape", websiteUrl: "https://sun.ac.za", apsSystemType: "standard" },
+    { name: "University of South Africa", slug: "unisa", province: "Gauteng", websiteUrl: "https://www.unisa.ac.za", apsSystemType: "standard" },
   ];
   const uniMap = new Map<string, number>();
   for (const u of unis) {
@@ -241,6 +242,41 @@ async function seed() {
     [{ slug: "english-hl", minLevel: 4, groupId: 1 }, { slug: "english-fal", minLevel: 4, groupId: 1 }], { durationYears: 4 });
   await addProgram("stellenbosch", "BSc Mathematical Sciences", "bsc-mathematical-sciences", "Science", 34,
     [{ slug: "mathematics", minLevel: 6 }]);
+
+  // ─── UNISA Programs ────────────────────────────────────────
+  console.log("🎓 Seeding UNISA programs...");
+  const engReq = [{ slug: "english-hl", minLevel: 4, groupId: 1 }, { slug: "english-fal", minLevel: 4, groupId: 1 }] as const;
+
+  await addProgram("unisa", "BSc Computing", "bsc-computing", "Science, Engineering & Technology", 20,
+    [{ slug: "mathematics", minLevel: 4 }, ...engReq],
+    { description: "Study software development, databases, and computer systems via distance learning." });
+  await addProgram("unisa", "BSc Information Technology", "bsc-it", "Science, Engineering & Technology", 20,
+    [{ slug: "mathematics", minLevel: 4 }, ...engReq]);
+  await addProgram("unisa", "BCom General", "bcom-general", "Economic & Management Sciences", 21,
+    [{ slug: "mathematics", minLevel: 4 }, ...engReq]);
+  await addProgram("unisa", "BCom Accounting Sciences", "bcom-accounting", "Economic & Management Sciences", 21,
+    [{ slug: "mathematics", minLevel: 4 }, ...engReq]);
+  await addProgram("unisa", "BCom Economics", "bcom-economics", "Economic & Management Sciences", 21,
+    [{ slug: "mathematics", minLevel: 4 }, ...engReq]);
+  await addProgram("unisa", "BCom Law", "bcom-law", "Law", 21,
+    [{ slug: "mathematics", minLevel: 4 }, ...engReq], { durationYears: 4 });
+  await addProgram("unisa", "LLB", "llb", "Law", 20,
+    [...engReq], { durationYears: 4, description: "South Africa's most accessible direct-entry LLB route." });
+  await addProgram("unisa", "BA General", "ba-general", "Human Sciences", 20,
+    [...engReq]);
+  await addProgram("unisa", "BA Psychology", "ba-psychology", "Human Sciences", 21,
+    [...engReq]);
+  await addProgram("unisa", "BEd (Foundation Phase Teaching)", "bed-foundation", "Education", 20,
+    [...engReq], { durationYears: 4 });
+  await addProgram("unisa", "BEd (Intermediate Phase Teaching)", "bed-intermediate", "Education", 20,
+    [...engReq], { durationYears: 4 });
+  await addProgram("unisa", "BSc Life Sciences", "bsc-life-sciences", "Science, Engineering & Technology", 20,
+    [{ slug: "life-sciences", minLevel: 4 }, ...engReq]);
+  await addProgram("unisa", "Diploma in Public Relations", "dip-public-relations", "Human Sciences", 18,
+    [...engReq], { qualificationType: "diploma", durationYears: 3 });
+  await addProgram("unisa", "Higher Certificate in Accounting Sciences", "hcert-accounting", "Economic & Management Sciences", 15,
+    [{ slug: "mathematics", minLevel: 3, groupId: 1 }, { slug: "mathematical-literacy", minLevel: 4, groupId: 1 }, ...engReq],
+    { qualificationType: "diploma", durationYears: 1, description: "Pathway qualification into BCom Accounting Sciences." });
 
   console.log("\n✅ Database seeded successfully!");
 }
