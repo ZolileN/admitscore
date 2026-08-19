@@ -144,18 +144,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ── Footer ──────────────────────────────────────── */}
-      <footer className="py-8" style={{ borderTop: "1px solid var(--border-subtle)" }}>
-        <div className="container-wide flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md flex items-center justify-center font-bold text-white text-xs" style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>A</div>
-            <span className="text-sm font-semibold">AdmitScore</span>
-          </div>
-          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-            © {new Date().getFullYear()} AdmitScore. Free for every South African student. Not affiliated with any university.
-          </p>
-        </div>
-      </footer>
     </main>
   );
 }
