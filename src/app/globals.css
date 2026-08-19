@@ -397,6 +397,11 @@ body {
 }
 
 /* ─── Combobox ─────────────────────────────────────────────── */
+.combobox-active {
+  position: relative;
+  z-index: 30;
+}
+
 .combobox-dropdown {
   position: absolute;
   top: 100%;
