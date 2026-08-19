@@ -1,4 +1,5 @@
 import Link from "next/link";
+import UnisaNotice from "@/components/UnisaNotice";
 import { db } from "@/db";
 import { universities, programs, programApsRules, programSubjectRules, subjects } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -74,8 +75,10 @@ export default async function ProgramPage({ params }: Props) {
       name: uni.name,
       url: uni.websiteUrl,
     },
-    educationalProgramMode: "full-time",
+    educationalProgramMode: uni.slug === "unisa" ? "online" : "full-time",
     timeToComplete: `P${prog.durationYears}Y`,
+    description: prog.description,
+    occupationalCategory: prog.faculty,
   };
 
   return (
@@ -115,6 +118,18 @@ export default async function ProgramPage({ params }: Props) {
             {prog.durationYears} Year{prog.durationYears !== 1 ? "s" : ""}
           </span>
         </div>
+
+        {prog.description && (
+          <p className="text-sm mb-6 max-w-2xl" style={{ color: "var(--text-secondary)" }}>
+            {prog.description}
+          </p>
+        )}
+
+        {uni.slug === "unisa" && (
+          <div className="mb-6">
+            <UnisaNotice compact />
+          </div>
+        )}
       </section>
 
       <section className="container-app pb-8">
@@ -182,6 +197,22 @@ export default async function ProgramPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {prog.pathwayProgramSlug && (
+        <section className="container-app pb-8">
+          <div className="glass-card-static p-5">
+            <div className="text-xs uppercase tracking-wider mb-2" style={{ color: "var(--text-muted)" }}>
+              Qualification pathway
+            </div>
+            <p className="text-sm mb-3" style={{ color: "var(--text-secondary)" }}>
+              {prog.pathwayLabel || "Continue your studies with the next qualification."}
+            </p>
+            <Link href={`/requirements/${uni.slug}/${prog.pathwayProgramSlug}`} className="text-sm font-medium no-underline" style={{ color: "var(--accent-blue)" }}>
+              View next step →
+            </Link>
+          </div>
+        </section>
+      )}
 
       <section className="container-app pb-16">
         <div className="glass-card p-6 text-center" style={{ borderColor: "rgba(59,130,246,0.2)" }}>

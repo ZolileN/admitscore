@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { programs, programApsRules, programSubjectRules, universities, subjects } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { percentageToLevel } from "@/lib/aps";
+import { calculateAPS, percentageToLevel } from "@/lib/aps";
+import { getLifeOrientationRule } from "@/lib/aps-system";
+import { categorizeMatch, evaluateSubjectRequirements } from "@/lib/match-logic";
 import { matchRequestSchema } from "@/lib/validators";
-import type { ProgramMatch, SubjectRequirement, MatchResults } from "@/lib/types";
+import type { ProgramMatch, MatchResults } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,48 +21,39 @@ export async function POST(request: NextRequest) {
     }
 
     const studentMarks = parsed.data.subjects;
-
-    // ── Build O(1) lookup map ────────────────────────────
     const markMap = new Map<number, { mark: number; level: number }>();
-    for (const sm of studentMarks) {
-      markMap.set(sm.subjectId, {
-        mark: sm.mark,
-        level: percentageToLevel(sm.mark),
+    for (const studentMark of studentMarks) {
+      markMap.set(studentMark.subjectId, {
+        mark: studentMark.mark,
+        level: percentageToLevel(studentMark.mark),
       });
     }
 
-    // ── Calculate student APS (exclude LO, best 6) ──────
     const loRows = await db.select({ id: subjects.id }).from(subjects).where(eq(subjects.slug, "life-orientation"));
     const loId = loRows.length > 0 ? loRows[0].id : undefined;
+    const subjectMarks = studentMarks.map((entry) => ({ subjectId: entry.subjectId, mark: entry.mark }));
+    const standardAps = calculateAPS(subjectMarks, {
+      lifeOrientationRule: "exclude",
+      lifeOrientationSubjectId: loId,
+    });
 
-    const allLevels: number[] = [];
-    for (const [subId, data] of markMap.entries()) {
-      if (subId !== loId) {
-        allLevels.push(data.level);
-      }
-    }
-    allLevels.sort((a, b) => b - a);
-    const studentAps = allLevels.slice(0, 6).reduce((sum, l) => sum + l, 0);
-
-    // ── Fetch all programs ───────────────────────────────
     const allProgramRows = await db.select().from(programs);
     const allUniRows = await db.select().from(universities);
     const allApsRules = await db.select().from(programApsRules);
     const allSubjectRules = await db.select().from(programSubjectRules);
     const allSubjects = await db.select().from(subjects);
 
-    // Build lookup maps
-    const uniMap = new Map(allUniRows.map(u => [u.id, u]));
-    const apsRuleMap = new Map(allApsRules.map(r => [r.programId, r]));
-    const subjectMap = new Map(allSubjects.map(s => [s.id, s]));
+    const uniMap = new Map(allUniRows.map((uni) => [uni.id, uni]));
+    const apsRuleMap = new Map(allApsRules.map((rule) => [rule.programId, rule]));
+    const subjectMap = new Map(allSubjects.map((subject) => [subject.id, subject]));
     const subjectRulesMap = new Map<number, typeof allSubjectRules>();
+
     for (const rule of allSubjectRules) {
       const existing = subjectRulesMap.get(rule.programId) || [];
       existing.push(rule);
       subjectRulesMap.set(rule.programId, existing);
     }
 
-    // ── Evaluate each program ────────────────────────────
     const safeBets: ProgramMatch[] = [];
     const exactMatches: ProgramMatch[] = [];
     const nearMisses: ProgramMatch[] = [];
@@ -70,46 +63,32 @@ export async function POST(request: NextRequest) {
       const uni = uniMap.get(program.universityId);
       if (!apsRule || !uni) continue;
 
-      const requiredAps = apsRule.minApsScore;
-      const apsGap = Math.max(0, requiredAps - studentAps);
+      const loRule = getLifeOrientationRule(uni.slug, uni.apsSystemType);
+      const programStudentAps = calculateAPS(subjectMarks, {
+        lifeOrientationRule: loRule,
+        lifeOrientationSubjectId: loId,
+      });
 
-      // ── Evaluate subject requirements ──────────────────
+      const requiredAps = apsRule.minApsScore;
+      const apsGap = Math.max(0, requiredAps - programStudentAps);
       const rules = subjectRulesMap.get(program.id) || [];
-      const subjectReqs: SubjectRequirement[] = [];
-      let allMandatoryMet = true;
-      const orGroups = new Map<number, boolean>();
+      const subjectNames = new Map<number, string>();
 
       for (const rule of rules) {
-        const subjectData = subjectMap.get(rule.subjectId);
-        const studentData = markMap.get(rule.subjectId);
-        const studentLevel = studentData?.level ?? null;
-        const met = studentLevel !== null && studentLevel >= rule.minLevel;
-        const gap = studentLevel !== null ? Math.max(0, rule.minLevel - studentLevel) : rule.minLevel;
-
-        subjectReqs.push({
-          subjectId: rule.subjectId,
-          subjectName: subjectData?.name || "Unknown",
-          minLevel: rule.minLevel,
-          groupId: rule.groupId,
-          met,
-          studentLevel,
-          gap,
-        });
-
-        if (rule.groupId !== null) {
-          const currentGroupStatus = orGroups.get(rule.groupId) || false;
-          orGroups.set(rule.groupId, currentGroupStatus || met);
-        } else {
-          if (!met) allMandatoryMet = false;
-        }
+        const subject = subjectMap.get(rule.subjectId);
+        if (subject) subjectNames.set(rule.subjectId, subject.name);
       }
 
-      let allOrGroupsMet = true;
-      for (const [, groupMet] of orGroups) {
-        if (!groupMet) allOrGroupsMet = false;
-      }
+      const evaluation = evaluateSubjectRequirements(rules, markMap, subjectNames);
+      const category = categorizeMatch({
+        allSubjectsMet: evaluation.allSubjectsMet,
+        apsGap,
+        subjectGapScore: evaluation.subjectGapScore,
+        studentAps: programStudentAps,
+        requiredAps,
+      });
 
-      const allSubjectsMet = allMandatoryMet && allOrGroupsMet;
+      if (!category) continue;
 
       const match: ProgramMatch = {
         programId: program.id,
@@ -122,30 +101,24 @@ export async function POST(request: NextRequest) {
         qualificationType: program.qualificationType,
         durationYears: program.durationYears,
         requiredAps,
-        studentAps,
+        studentAps: programStudentAps,
         apsGap,
-        subjectRequirements: subjectReqs,
-        category: "near",
+        subjectRequirements: evaluation.subjectReqs,
+        category,
+        nearMissSummary: category === "near" ? evaluation.subjectReqs.filter((req) => !req.met).slice(0, 3).map((req) => `${req.subjectName} (need L${req.minLevel}${req.studentLevel !== null ? `, yours L${req.studentLevel}` : ""})`).join(" · ") || (apsGap > 0 ? `Need ${apsGap} more APS points` : null) : null,
       };
 
-      if (allSubjectsMet && apsGap === 0 && studentAps >= requiredAps + 3) {
-        match.category = "safe";
-        safeBets.push(match);
-      } else if (allSubjectsMet && apsGap === 0) {
-        match.category = "exact";
-        exactMatches.push(match);
-      } else if (apsGap <= 5) {
-        match.category = "near";
-        nearMisses.push(match);
-      }
+      if (category === "safe") safeBets.push(match);
+      else if (category === "exact") exactMatches.push(match);
+      else nearMisses.push(match);
     }
 
     safeBets.sort((a, b) => b.requiredAps - a.requiredAps);
     exactMatches.sort((a, b) => a.apsGap - b.apsGap);
-    nearMisses.sort((a, b) => a.apsGap - b.apsGap);
+    nearMisses.sort((a, b) => a.apsGap - b.apsGap || a.subjectRequirements.filter((req) => !req.met).length - b.subjectRequirements.filter((req) => !req.met).length);
 
     const result: MatchResults = {
-      studentAps,
+      studentAps: standardAps,
       totalPrograms: safeBets.length + exactMatches.length + nearMisses.length,
       results: { safeBets, exactMatches, nearMisses },
     };

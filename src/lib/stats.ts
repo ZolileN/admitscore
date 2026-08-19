@@ -26,6 +26,7 @@ export async function getUniversitiesWithProgramCounts() {
       name: uni.name,
       slug: uni.slug,
       province: uni.province,
+      logoUrl: uni.logoUrl,
       programCount: uniPrograms.get(uni.id) || 0,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));

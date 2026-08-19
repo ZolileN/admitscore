@@ -1,60 +1,80 @@
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
+import { createDbClient } from "./client";
 import * as schema from "./schema";
 import { NSC_SUBJECTS } from "../lib/subjects";
+import { UNISA_ADMISSION_NOTE, UNIVERSITY_LOGOS } from "../lib/aps-system";
+import { eq, and } from "drizzle-orm";
 import * as dotenv from "dotenv";
+import { mkdirSync } from "fs";
 
 dotenv.config({ path: ".env.local" });
 
-const client = createClient({
-  url: process.env.TURSO_DATABASE_URL!,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
-
-const db = drizzle(client, { schema });
+const db = createDbClient();
+const resetMode = process.env.SEED_MODE === "reset";
 
 // ─── Helper ─────────────────────────────────────────────────
 function getSubjectId(slug: string): number {
-  const s = subjectMap.get(slug);
-  if (!s) throw new Error(`Subject not found: ${slug}`);
-  return s;
+  const subjectId = subjectMap.get(slug);
+  if (!subjectId) throw new Error(`Subject not found: ${slug}`);
+  return subjectId;
 }
 const subjectMap = new Map<string, number>();
 
 async function seed() {
-  console.log("🌱 Seeding AdmitScore database...\n");
+  console.log(`🌱 Seeding AdmitScore database (${resetMode ? "reset" : "incremental"})...\n`);
 
-  // ── Clear existing data ──
-  await db.delete(schema.programSubjectRules);
-  await db.delete(schema.programApsRules);
-  await db.delete(schema.programs);
-  await db.delete(schema.subjects);
-  await db.delete(schema.universities);
+  if (!process.env.TURSO_DATABASE_URL) {
+    mkdirSync("./data", { recursive: true });
+    console.log("ℹ️  Using local database at ./data/admitscore.db\n");
+  }
+
+  if (resetMode) {
+    await db.delete(schema.programSubjectRules);
+    await db.delete(schema.programApsRules);
+    await db.delete(schema.programs);
+    await db.delete(schema.subjects);
+    await db.delete(schema.universities);
+  }
 
   // ── Seed Subjects ──
   console.log("📚 Seeding subjects...");
-  for (const s of NSC_SUBJECTS) {
+  for (const subject of NSC_SUBJECTS) {
+    const existing = await db.select().from(schema.subjects).where(eq(schema.subjects.slug, subject.slug));
+    if (existing.length > 0) {
+      subjectMap.set(subject.slug, existing[0].id);
+      continue;
+    }
+
     const result = await db.insert(schema.subjects).values({
-      name: s.name, slug: s.slug, category: s.category, isCore: s.isCore,
+      name: subject.name,
+      slug: subject.slug,
+      category: subject.category,
+      isCore: subject.isCore,
     }).returning();
-    subjectMap.set(s.slug, result[0].id);
+    subjectMap.set(subject.slug, result[0].id);
   }
   console.log(`   ✓ ${NSC_SUBJECTS.length} subjects\n`);
 
   // ── Seed Universities ──
   console.log("🏛️  Seeding universities...");
   const unis = [
-    { name: "University of Cape Town", slug: "uct", province: "Western Cape", websiteUrl: "https://uct.ac.za", apsSystemType: "standard" },
-    { name: "University of the Witwatersrand", slug: "wits", province: "Gauteng", websiteUrl: "https://wits.ac.za", apsSystemType: "standard" },
-    { name: "University of Pretoria", slug: "up", province: "Gauteng", websiteUrl: "https://up.ac.za", apsSystemType: "standard" },
-    { name: "University of Johannesburg", slug: "uj", province: "Gauteng", websiteUrl: "https://uj.ac.za", apsSystemType: "standard" },
-    { name: "Stellenbosch University", slug: "stellenbosch", province: "Western Cape", websiteUrl: "https://sun.ac.za", apsSystemType: "standard" },
-    { name: "University of South Africa", slug: "unisa", province: "Gauteng", websiteUrl: "https://www.unisa.ac.za", apsSystemType: "standard" },
+    { name: "University of Cape Town", slug: "uct", province: "Western Cape", websiteUrl: "https://uct.ac.za", apsSystemType: "standard", logoUrl: UNIVERSITY_LOGOS.uct, admissionNote: null },
+    { name: "University of the Witwatersrand", slug: "wits", province: "Gauteng", websiteUrl: "https://wits.ac.za", apsSystemType: "cap4", logoUrl: UNIVERSITY_LOGOS.wits, admissionNote: null },
+    { name: "University of Pretoria", slug: "up", province: "Gauteng", websiteUrl: "https://up.ac.za", apsSystemType: "standard", logoUrl: UNIVERSITY_LOGOS.up, admissionNote: null },
+    { name: "University of Johannesburg", slug: "uj", province: "Gauteng", websiteUrl: "https://uj.ac.za", apsSystemType: "standard", logoUrl: UNIVERSITY_LOGOS.uj, admissionNote: null },
+    { name: "Stellenbosch University", slug: "stellenbosch", province: "Western Cape", websiteUrl: "https://sun.ac.za", apsSystemType: "standard", logoUrl: UNIVERSITY_LOGOS.stellenbosch, admissionNote: null },
+    { name: "University of South Africa", slug: "unisa", province: "Gauteng", websiteUrl: "https://www.unisa.ac.za", apsSystemType: "standard", logoUrl: UNIVERSITY_LOGOS.unisa, admissionNote: UNISA_ADMISSION_NOTE },
   ];
   const uniMap = new Map<string, number>();
-  for (const u of unis) {
-    const result = await db.insert(schema.universities).values(u).returning();
-    uniMap.set(u.slug, result[0].id);
+  for (const uni of unis) {
+    const existing = await db.select().from(schema.universities).where(eq(schema.universities.slug, uni.slug));
+    if (existing.length > 0) {
+      await db.update(schema.universities).set(uni).where(eq(schema.universities.slug, uni.slug));
+      uniMap.set(uni.slug, existing[0].id);
+      continue;
+    }
+
+    const result = await db.insert(schema.universities).values(uni).returning();
+    uniMap.set(uni.slug, result[0].id);
   }
   console.log(`   ✓ ${unis.length} universities\n`);
 
@@ -62,19 +82,47 @@ async function seed() {
   async function addProgram(
     uniSlug: string, name: string, slug: string, faculty: string,
     minAps: number, subjectReqs: { slug: string; minLevel: number; groupId?: number }[],
-    opts?: { qualificationType?: string; durationYears?: number; description?: string }
+    opts?: {
+      qualificationType?: string;
+      durationYears?: number;
+      description?: string;
+      pathwayProgramSlug?: string;
+      pathwayLabel?: string;
+    }
   ) {
     const universityId = uniMap.get(uniSlug)!;
-    const programResult = await db.insert(schema.programs).values({
-      universityId, name, slug, faculty,
+    const existingPrograms = await db.select().from(schema.programs).where(
+      and(eq(schema.programs.universityId, universityId), eq(schema.programs.slug, slug))
+    );
+
+    let program = existingPrograms[0];
+    const programValues = {
+      universityId,
+      name,
+      slug,
+      faculty,
       qualificationType: opts?.qualificationType || "degree",
       durationYears: opts?.durationYears || 3,
       description: opts?.description || null,
-    }).returning();
-    const program = programResult[0];
+      pathwayProgramSlug: opts?.pathwayProgramSlug || null,
+      pathwayLabel: opts?.pathwayLabel || null,
+    };
 
-    await db.insert(schema.programApsRules).values({ programId: program.id, minApsScore: minAps });
+    if (program) {
+      await db.update(schema.programs).set(programValues).where(eq(schema.programs.id, program.id));
+    } else {
+      const programResult = await db.insert(schema.programs).values(programValues).returning();
+      program = programResult[0];
+    }
 
+    const existingApsRule = await db.select().from(schema.programApsRules).where(eq(schema.programApsRules.programId, program.id));
+    if (existingApsRule.length > 0) {
+      await db.update(schema.programApsRules).set({ minApsScore: minAps }).where(eq(schema.programApsRules.programId, program.id));
+    } else {
+      await db.insert(schema.programApsRules).values({ programId: program.id, minApsScore: minAps });
+    }
+
+    await db.delete(schema.programSubjectRules).where(eq(schema.programSubjectRules.programId, program.id));
     for (const req of subjectReqs) {
       await db.insert(schema.programSubjectRules).values({
         programId: program.id,
@@ -83,6 +131,7 @@ async function seed() {
         groupId: req.groupId ?? null,
       });
     }
+
     return program;
   }
 
@@ -276,7 +325,26 @@ async function seed() {
     [...engReq], { qualificationType: "diploma", durationYears: 3 });
   await addProgram("unisa", "Higher Certificate in Accounting Sciences", "hcert-accounting", "Economic & Management Sciences", 15,
     [{ slug: "mathematics", minLevel: 3, groupId: 1 }, { slug: "mathematical-literacy", minLevel: 4, groupId: 1 }, ...engReq],
-    { qualificationType: "diploma", durationYears: 1, description: "Pathway qualification into BCom Accounting Sciences." });
+    { qualificationType: "diploma", durationYears: 1, description: "Pathway qualification into BCom Accounting Sciences.", pathwayProgramSlug: "bcom-accounting", pathwayLabel: "Progress to BCom Accounting Sciences" });
+  await addProgram("unisa", "Higher Certificate in Law", "hcert-law", "Law", 15,
+    [...engReq], { qualificationType: "diploma", durationYears: 1, pathwayProgramSlug: "llb", pathwayLabel: "Progress to LLB" });
+  await addProgram("unisa", "BCom Financial Management", "bcom-financial-management", "Economic & Management Sciences", 21,
+    [{ slug: "mathematics", minLevel: 4 }, ...engReq]);
+  await addProgram("unisa", "BAdmin Public Administration", "badmin-public-admin", "Human Sciences", 20,
+    [...engReq]);
+  await addProgram("unisa", "BA Criminology", "ba-criminology", "Human Sciences", 20,
+    [...engReq]);
+  await addProgram("unisa", "BSc Statistics", "bsc-statistics", "Science, Engineering & Technology", 21,
+    [{ slug: "mathematics", minLevel: 5 }, ...engReq]);
+  await addProgram("unisa", "Diploma in Policing", "dip-policing", "Human Sciences", 18,
+    [...engReq], { qualificationType: "diploma", durationYears: 3 });
+  await addProgram("unisa", "Diploma in Accounting Sciences", "dip-accounting", "Economic & Management Sciences", 18,
+    [{ slug: "mathematics", minLevel: 3, groupId: 1 }, { slug: "mathematical-literacy", minLevel: 5, groupId: 1 }, ...engReq],
+    { qualificationType: "diploma", durationYears: 3, pathwayProgramSlug: "bcom-accounting", pathwayLabel: "Progress to BCom Accounting Sciences" });
+  await addProgram("unisa", "BSc Environmental Science", "bsc-environmental-science", "Science, Engineering & Technology", 20,
+    [{ slug: "mathematics", minLevel: 4, groupId: 1 }, { slug: "mathematical-literacy", minLevel: 5, groupId: 1 }, { slug: "life-sciences", minLevel: 4, groupId: 2 }, { slug: "physical-sciences", minLevel: 4, groupId: 2 }, ...engReq]);
+  await addProgram("unisa", "BEd (Senior Phase & FET Teaching)", "bed-senior-fet", "Education", 21,
+    [...engReq], { durationYears: 4 });
 
   console.log("\n✅ Database seeded successfully!");
 }
