@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AdmitScore
 
-## Getting Started
+South Africa's free APS calculator and university admissions matching engine.
 
-First, run the development server:
+## Features
+
+- Calculate your APS from matric marks
+- Match against programmes across UCT, Wits, UP, UJ, Stellenbosch, and UNISA
+- Browse university and programme requirements
+- Compare up to 3 programmes side by side
+- Share results via link or WhatsApp
+- Admin dashboard for updating programme APS and descriptions
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment
+
+Create `.env.local`:
+
+```env
+TURSO_DATABASE_URL=libsql://your-database.turso.io
+TURSO_AUTH_TOKEN=your-auth-token
+ADMIN_SECRET=choose-a-strong-secret
+```
+
+If `TURSO_DATABASE_URL` is omitted locally, the app falls back to `file:./data/admitscore.db`.
+
+### 3. Seed the database
+
+Incremental seed (default — upserts universities and programmes):
+
+```bash
+npm run db:seed
+```
+
+Full reset seed:
+
+```bash
+SEED_MODE=reset npm run db:seed
+```
+
+### 4. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run db:seed` | Incremental database seed |
+| `npm run db:push` | Push schema changes to the database |
 
-## Learn More
+## Admin
 
-To learn more about Next.js, take a look at the following resources:
+Visit `/admin` and sign in with your `ADMIN_SECRET` to update programme minimum APS scores and descriptions.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Set `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, and `ADMIN_SECRET` in your hosting provider
+2. Run `npm run db:seed` against production Turso
+3. Deploy with `npm run build`
 
-## Deploy on Vercel
+## Project structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `src/app/calculate` — APS calculator
+- `src/app/results` — match results
+- `src/app/requirements` — university/programme requirements
+- `src/app/compare` — programme comparison
+- `src/app/admin` — admin dashboard
+- `src/db/seed.ts` — database seed data
+- `src/lib/match-logic.ts` — eligibility matching rules
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+
+- Wits uses a Life Orientation cap of 4 points in APS calculations
+- UNISA minimum APS requirements do not guarantee admission because programmes are space-limited
+- Results URLs use subject slugs for stable shareable links

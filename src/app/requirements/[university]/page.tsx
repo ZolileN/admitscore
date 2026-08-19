@@ -1,4 +1,6 @@
 import Link from "next/link";
+import UniversityProgramsGrid from "@/components/UniversityProgramsGrid";
+import UnisaNotice from "@/components/UnisaNotice";
 import { db } from "@/db";
 import { universities, programs, programApsRules } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -11,7 +13,7 @@ interface Props {
 
 export async function generateStaticParams() {
   const unis = await db.select({ slug: universities.slug }).from(universities);
-  return unis.map((u) => ({ university: u.slug }));
+  return unis.map((uni) => ({ university: uni.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -21,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const uni = uniRows[0];
   return {
     title: `${uni.name} Entry Requirements — AdmitScore`,
-    description: `View APS scores and subject requirements for all programs at ${uni.name}. Free admissions checker for South African students.`,
+    description: `View APS scores and subject requirements for all programmes at ${uni.name}. Free admissions checker for South African students.`,
   };
 }
 
@@ -33,15 +35,16 @@ export default async function UniversityPage({ params }: Props) {
 
   const uniPrograms = await db.select().from(programs).where(eq(programs.universityId, uni.id));
   const allApsRules = await db.select().from(programApsRules);
-  const apsMap = new Map(allApsRules.map(r => [r.programId, r]));
+  const apsMap = new Map(allApsRules.map((rule) => [rule.programId, rule.minApsScore]));
 
-  // Group by faculty
-  const facultyMap = new Map<string, (typeof uniPrograms[0] & { apsRule?: typeof allApsRules[0] })[]>();
-  for (const p of uniPrograms) {
-    const group = facultyMap.get(p.faculty) || [];
-    group.push({ ...p, apsRule: apsMap.get(p.id) });
-    facultyMap.set(p.faculty, group);
-  }
+  const programCards = uniPrograms.map((program) => ({
+    slug: program.slug,
+    name: program.name,
+    faculty: program.faculty,
+    qualificationType: program.qualificationType,
+    durationYears: program.durationYears,
+    minAps: apsMap.get(program.id) ?? null,
+  }));
 
   return (
     <main className="min-h-screen">
@@ -62,13 +65,17 @@ export default async function UniversityPage({ params }: Props) {
           <span style={{ color: "var(--text-primary)" }}>{uni.name}</span>
         </div>
 
-        <div className="flex items-start justify-between gap-4 mb-8">
+        <div className="flex items-start gap-4 mb-6">
+          {uni.logoUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={uni.logoUrl} alt="" className="w-14 h-14 rounded-xl p-2" style={{ background: "var(--bg-tertiary)" }} />
+          )}
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold mb-2" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')" }}>
               {uni.name}
             </h1>
             <p style={{ color: "var(--text-secondary)" }}>
-              {uni.province} · {uniPrograms.length} programs
+              {uni.province} · {uniPrograms.length} programmes
               {uni.slug === "unisa" && " · Distance learning"}
               {uni.websiteUrl && (
                 <> · <a href={uni.websiteUrl} target="_blank" rel="noopener noreferrer" className="no-underline hover:underline" style={{ color: "var(--accent-blue)" }}>{uni.websiteUrl.replace("https://", "")}</a></>
@@ -76,43 +83,16 @@ export default async function UniversityPage({ params }: Props) {
             </p>
           </div>
         </div>
+
+        {uni.slug === "unisa" && (
+          <div className="mb-8">
+            <UnisaNotice />
+          </div>
+        )}
       </section>
 
       <section className="container-wide pb-16">
-        {Array.from(facultyMap.entries()).map(([faculty, progs]) => (
-          <div key={faculty} className="mb-10">
-            <h2 className="text-xl font-bold mb-4" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')", color: "var(--text-primary)" }}>
-              {faculty}
-            </h2>
-            <div className="space-y-3">
-              {progs.map((prog) => (
-                <Link
-                  key={prog.slug}
-                  href={`/requirements/${uni.slug}/${prog.slug}`}
-                  className="glass-card p-4 flex items-center justify-between no-underline block"
-                >
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{prog.name}</div>
-                    <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
-                      {prog.qualificationType === "degree" ? "Degree" : prog.qualificationType === "diploma" ? "Diploma" : "Extended"} · {prog.durationYears} years
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    {prog.apsRule && (
-                      <div className="text-right">
-                        <div className="text-xs" style={{ color: "var(--text-muted)" }}>Min APS</div>
-                        <div className="text-lg font-bold" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')", color: "var(--accent-blue)" }}>
-                          {prog.apsRule.minApsScore}
-                        </div>
-                      </div>
-                    )}
-                    <span style={{ color: "var(--text-muted)" }}>›</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        ))}
+        <UniversityProgramsGrid universitySlug={uni.slug} programs={programCards} />
       </section>
     </main>
   );

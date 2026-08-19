@@ -7,6 +7,7 @@ interface UniversityCard {
   name: string;
   slug: string;
   province: string;
+  logoUrl?: string | null;
   programCount: number;
 }
 
@@ -61,8 +62,13 @@ export default function RequirementsGrid({ universities }: RequirementsGridProps
               className="glass-card p-6 no-underline block group"
             >
               <div className="flex items-start justify-between mb-4 gap-3">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shrink-0" style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15))", color: "var(--accent-blue)" }}>
-                  {uni.name.split(" ").map((word) => word[0]).join("").slice(0, 3)}
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-bold shrink-0 overflow-hidden" style={{ background: "linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15))", color: "var(--accent-blue)" }}>
+                  {uni.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={uni.logoUrl} alt="" className="w-8 h-8 object-contain" />
+                  ) : (
+                    uni.name.split(" ").map((word) => word[0]).join("").slice(0, 3)
+                  )}
                 </div>
                 <div className="flex flex-wrap justify-end gap-2">
                   {uni.slug === "unisa" && (

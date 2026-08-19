@@ -6,6 +6,7 @@ import Link from "next/link";
 import { NSC_SUBJECTS } from "@/lib/subjects";
 import { percentageToLevel } from "@/lib/aps";
 import { APS_LEVEL_COLORS } from "@/lib/constants";
+import { encodeResultsParam, loadMarksFromStorage, saveMarksToStorage } from "@/lib/results-url";
 
 interface SubjectEntry {
   id: string;
@@ -64,6 +65,38 @@ export default function CalculatePage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // ─── Restore saved marks ───────────────────────────────────
+  useEffect(() => {
+    const saved = loadMarksFromStorage();
+    if (!saved?.subjects.length) return;
+
+    const savedMap = new Map(saved.subjects.map((entry) => [entry.subjectSlug, entry.mark]));
+    const optionalSaved = saved.subjects.filter((entry) =>
+      !["english-hl", "english-fal", "mathematics", "mathematical-literacy", "life-orientation"].includes(entry.subjectSlug)
+    );
+    let optionalIndex = 0;
+
+    setSubjects((prev) => prev.map((entry) => {
+      if (entry.subjectSlug && savedMap.has(entry.subjectSlug)) {
+        return { ...entry, mark: savedMap.get(entry.subjectSlug)! };
+      }
+
+      if (!entry.isCompulsory && !entry.subjectSlug && optionalSaved[optionalIndex]) {
+        const savedEntry = optionalSaved[optionalIndex++];
+        const subject = NSC_SUBJECTS.find((candidate) => candidate.slug === savedEntry.subjectSlug);
+        if (!subject) return entry;
+        return {
+          ...entry,
+          subjectSlug: subject.slug,
+          subjectName: subject.name,
+          mark: savedEntry.mark,
+        };
+      }
+
+      return entry;
+    }));
+  }, []);
+
   // ─── Select Subject ──────────────────────────────────────
   const selectSubject = useCallback((entryId: string, subject: typeof NSC_SUBJECTS[0]) => {
     setSubjects((prev) => prev.map((s) => s.id === entryId ? { ...s, subjectSlug: subject.slug, subjectName: subject.name } : s));
@@ -101,11 +134,20 @@ export default function CalculatePage() {
   const canSubmit = validSubjects.length >= 6;
   const handleSubmit = () => {
     if (!canSubmit) return;
-    const payload = validSubjects.map((s) => {
-      const subjectData = NSC_SUBJECTS.find((ns) => ns.slug === s.subjectSlug);
-      const subjectIndex = NSC_SUBJECTS.indexOf(subjectData!);
-      return `${subjectIndex}:${s.mark}`;
-    }).join(",");
+
+    saveMarksToStorage(
+      validSubjects.map((entry) => ({
+        subjectSlug: entry.subjectSlug!,
+        mark: entry.mark,
+      }))
+    );
+
+    const payload = encodeResultsParam(
+      validSubjects.map((entry) => ({
+        subjectSlug: entry.subjectSlug!,
+        mark: Number(entry.mark),
+      }))
+    );
 
     startTransition(() => {
       router.push(`/results?s=${encodeURIComponent(payload)}`);

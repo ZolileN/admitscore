@@ -9,7 +9,8 @@ export const universities = sqliteTable("universities", {
   province: text("province").notNull(),
   logoUrl: text("logo_url"),
   websiteUrl: text("website_url"),
-  apsSystemType: text("aps_system_type").notNull().default("standard"), // 'standard' | 'percentage' | 'weighted'
+  apsSystemType: text("aps_system_type").notNull().default("standard"), // 'standard' | 'cap4' | 'halve' | 'include'
+  admissionNote: text("admission_note"),
 });
 
 // ─── Subjects (NSC) ─────────────────────────────────────────
@@ -33,6 +34,8 @@ export const programs = sqliteTable("programs", {
   qualificationType: text("qualification_type").notNull().default("degree"), // 'degree' | 'diploma' | 'extended_degree'
   durationYears: integer("duration_years").notNull().default(3),
   description: text("description"),
+  pathwayProgramSlug: text("pathway_program_slug"),
+  pathwayLabel: text("pathway_label"),
 });
 
 // ─── Program APS Rules ──────────────────────────────────────

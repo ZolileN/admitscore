@@ -32,6 +32,7 @@ export interface ProgramMatch {
   apsGap: number; // positive = shortfall
   subjectRequirements: SubjectRequirement[];
   category: "safe" | "exact" | "near";
+  nearMissSummary?: string | null;
 }
 
 export interface MatchResults {
