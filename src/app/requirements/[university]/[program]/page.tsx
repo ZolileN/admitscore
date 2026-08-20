@@ -1,6 +1,7 @@
 import Link from "next/link";
 import UnisaNotice from "@/components/UnisaNotice";
 import DataFreshnessBadge from "@/components/DataFreshnessBadge";
+import ProgramViewTracker from "@/components/ProgramViewTracker";
 import { db } from "@/db";
 import { universities, programs, programApsRules, programSubjectRules, subjects } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -93,6 +94,7 @@ export default async function ProgramPage({ params }: Props) {
 
   return (
     <main className="min-h-screen">
+      <ProgramViewTracker universitySlug={uni.slug} programSlug={prog.slug} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <section className="container-app pt-8 pb-4">

@@ -1,7 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { MLK_COMPUTER_CONTACT_URL } from "@/lib/constants";
+import { trackEvent } from "@/lib/analytics";
 
-export default function MlkComputerCta() {
+interface MlkComputerCtaProps {
+  location?: string;
+}
+
+export default function MlkComputerCta({ location = "results" }: MlkComputerCtaProps) {
   return (
     <div
       className="glass-card-static p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
@@ -19,6 +26,7 @@ export default function MlkComputerCta() {
         href={MLK_COMPUTER_CONTACT_URL}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackEvent("mlk_cta_click", { location })}
         className="btn-primary !text-sm !px-6 !py-3 no-underline whitespace-nowrap shrink-0"
       >
         Contact MLK Computer Consulting
