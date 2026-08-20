@@ -77,6 +77,14 @@ function ProgramCard({ program }: { program: ProgramMatch }) {
           <div className="text-xs mt-0.5" style={{ color: "var(--text-secondary)" }}>
             {program.universityName} · {program.faculty}
           </div>
+          {program.nsfasEligible && (
+            <span className="text-xs mt-1 inline-block px-2 py-0.5 rounded-full" style={{ background: "rgba(16,185,129,0.1)", color: "var(--accent-emerald)" }}>
+              NSFAS eligible
+            </span>
+          )}
+          {program.bursaryNote && (
+            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>{program.bursaryNote}</p>
+          )}
           {program.universitySlug === "unisa" && (
             <div className="text-xs mt-1" style={{ color: "var(--accent-amber)" }}>
               Space-limited admission — minimum APS is not a guarantee.

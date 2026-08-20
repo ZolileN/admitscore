@@ -5,6 +5,13 @@ export const UNIVERSITY_ABBREVIATIONS: Record<string, string> = {
   uj: "UJ",
   stellenbosch: "Stellenbosch",
   unisa: "UNISA",
+  nwu: "NWU",
+  ukzn: "UKZN",
+  nmu: "NMU",
+  cput: "CPUT",
+  tut: "TUT",
+  dut: "DUT",
+  falsebay: "False Bay TVET",
 };
 
 export function getUniversityAbbreviation(slug: string, fallbackName: string) {

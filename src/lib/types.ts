@@ -33,6 +33,8 @@ export interface ProgramMatch {
   subjectRequirements: SubjectRequirement[];
   category: "safe" | "exact" | "near";
   nearMissSummary?: string | null;
+  bursaryNote?: string | null;
+  nsfasEligible?: boolean;
 }
 
 export interface MatchResults {

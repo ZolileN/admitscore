@@ -36,6 +36,9 @@ export const programs = sqliteTable("programs", {
   description: text("description"),
   pathwayProgramSlug: text("pathway_program_slug"),
   pathwayLabel: text("pathway_label"),
+  bursaryNote: text("bursary_note"),
+  nsfasEligible: integer("nsfas_eligible", { mode: "boolean" }).notNull().default(true),
+  dataUpdatedAt: text("data_updated_at"),
 });
 
 // ─── Program APS Rules ──────────────────────────────────────

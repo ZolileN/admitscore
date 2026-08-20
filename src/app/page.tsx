@@ -1,3 +1,4 @@
+import MlkComputerCta from "@/components/MlkComputerCta";
 import Link from "next/link";
 import { getSiteStats, getUniversitiesWithProgramCounts } from "@/lib/stats";
 import { getUniversityAbbreviation } from "@/lib/universities";
@@ -41,6 +42,7 @@ export default async function HomePage() {
               <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
             </Link>
             <Link href="/requirements" className="btn-secondary !text-base !px-8 !py-4 no-underline w-full sm:w-auto">Browse Requirements</Link>
+            <Link href="/simulate" className="btn-secondary !text-base !px-8 !py-4 no-underline w-full sm:w-auto">What-if Simulator</Link>
           </div>
         </div>
       </section>
@@ -127,6 +129,12 @@ export default async function HomePage() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="py-12">
+        <div className="container-app">
+          <MlkComputerCta />
         </div>
       </section>
 

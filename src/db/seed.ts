@@ -2,6 +2,8 @@ import { createDbClient } from "./client";
 import * as schema from "./schema";
 import { NSC_SUBJECTS } from "../lib/subjects";
 import { UNISA_ADMISSION_NOTE, UNIVERSITY_LOGOS } from "../lib/aps-system";
+import { DATA_UPDATED_AT } from "../lib/constants";
+import { EXTRA_PROGRAMS, EXTRA_UNIVERSITIES, UNISA_HIGHER_CERTIFICATES } from "./seeds/extended-programs";
 import { eq, and } from "drizzle-orm";
 import * as dotenv from "dotenv";
 import { mkdirSync } from "fs";
@@ -63,6 +65,7 @@ async function seed() {
     { name: "University of Johannesburg", slug: "uj", province: "Gauteng", websiteUrl: "https://uj.ac.za", apsSystemType: "standard", logoUrl: UNIVERSITY_LOGOS.uj, admissionNote: null },
     { name: "Stellenbosch University", slug: "stellenbosch", province: "Western Cape", websiteUrl: "https://sun.ac.za", apsSystemType: "standard", logoUrl: UNIVERSITY_LOGOS.stellenbosch, admissionNote: null },
     { name: "University of South Africa", slug: "unisa", province: "Gauteng", websiteUrl: "https://www.unisa.ac.za", apsSystemType: "standard", logoUrl: UNIVERSITY_LOGOS.unisa, admissionNote: UNISA_ADMISSION_NOTE },
+    ...EXTRA_UNIVERSITIES.map((u) => ({ ...u, logoUrl: UNIVERSITY_LOGOS[u.slug], admissionNote: null as string | null })),
   ];
   const uniMap = new Map<string, number>();
   for (const uni of unis) {
@@ -88,6 +91,8 @@ async function seed() {
       description?: string;
       pathwayProgramSlug?: string;
       pathwayLabel?: string;
+      bursaryNote?: string;
+      nsfasEligible?: boolean;
     }
   ) {
     const universityId = uniMap.get(uniSlug)!;
@@ -106,6 +111,9 @@ async function seed() {
       description: opts?.description || null,
       pathwayProgramSlug: opts?.pathwayProgramSlug || null,
       pathwayLabel: opts?.pathwayLabel || null,
+      bursaryNote: opts?.bursaryNote || null,
+      nsfasEligible: opts?.nsfasEligible ?? true,
+      dataUpdatedAt: DATA_UPDATED_AT,
     };
 
     if (program) {
@@ -323,11 +331,6 @@ async function seed() {
     [{ slug: "life-sciences", minLevel: 4 }, ...engReq]);
   await addProgram("unisa", "Diploma in Public Relations", "dip-public-relations", "Human Sciences", 18,
     [...engReq], { qualificationType: "diploma", durationYears: 3 });
-  await addProgram("unisa", "Higher Certificate in Accounting Sciences", "hcert-accounting", "Economic & Management Sciences", 15,
-    [{ slug: "mathematics", minLevel: 3, groupId: 1 }, { slug: "mathematical-literacy", minLevel: 4, groupId: 1 }, ...engReq],
-    { qualificationType: "diploma", durationYears: 1, description: "Pathway qualification into BCom Accounting Sciences.", pathwayProgramSlug: "bcom-accounting", pathwayLabel: "Progress to BCom Accounting Sciences" });
-  await addProgram("unisa", "Higher Certificate in Law", "hcert-law", "Law", 15,
-    [...engReq], { qualificationType: "diploma", durationYears: 1, pathwayProgramSlug: "llb", pathwayLabel: "Progress to LLB" });
   await addProgram("unisa", "BCom Financial Management", "bcom-financial-management", "Economic & Management Sciences", 21,
     [{ slug: "mathematics", minLevel: 4 }, ...engReq]);
   await addProgram("unisa", "BAdmin Public Administration", "badmin-public-admin", "Human Sciences", 20,
@@ -345,6 +348,16 @@ async function seed() {
     [{ slug: "mathematics", minLevel: 4, groupId: 1 }, { slug: "mathematical-literacy", minLevel: 5, groupId: 1 }, { slug: "life-sciences", minLevel: 4, groupId: 2 }, { slug: "physical-sciences", minLevel: 4, groupId: 2 }, ...engReq]);
   await addProgram("unisa", "BEd (Senior Phase & FET Teaching)", "bed-senior-fet", "Education", 21,
     [...engReq], { durationYears: 4 });
+
+  console.log("🎓 Seeding UNISA higher certificates...");
+  for (const program of UNISA_HIGHER_CERTIFICATES) {
+    await addProgram(program.uniSlug, program.name, program.slug, program.faculty, program.minAps, program.subjectReqs, program.opts);
+  }
+
+  console.log("🎓 Seeding expanded university programmes...");
+  for (const program of EXTRA_PROGRAMS) {
+    await addProgram(program.uniSlug, program.name, program.slug, program.faculty, program.minAps, program.subjectReqs, program.opts);
+  }
 
   console.log("\n✅ Database seeded successfully!");
 }

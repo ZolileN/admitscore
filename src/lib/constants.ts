@@ -6,6 +6,8 @@ export const APP_DESCRIPTION =
   "South Africa's free APS calculator and university admissions matching engine. Check your eligibility for programs across UCT, Wits, UP, UJ, Stellenbosch, UNISA, and more in seconds.";
 
 export const SITE_URL = "https://admitscore.co.za";
+export const DATA_UPDATED_AT = "2026-08-20";
+export const MLK_COMPUTER_URL = "https://mlkcomputer.com";
 
 export const APS_LEVEL_LABELS: Record<number, string> = {
   7: "Outstanding",
