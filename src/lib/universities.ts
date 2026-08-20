@@ -15,6 +15,8 @@ export const UNIVERSITY_ABBREVIATIONS: Record<string, string> = {
   ufs: "UFS",
   univen: "UNIVEN",
   spu: "SPU",
+  wsu: "WSU",
+  rhodes: "Rhodes",
   eeetvet: "EEC TVET",
   coastalkzn: "Coastal KZN",
   southcape: "South Cape TVET",
