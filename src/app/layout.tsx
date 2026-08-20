@@ -9,7 +9,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "AdmitScore — South Africa's Free APS Calculator & University Matcher",
   description:
-    "Check your APS score and instantly see which South African university programs you qualify for. Free, fast, and mobile-friendly. Covers UCT, Wits, UP, UJ, Stellenbosch, UNISA, NWU, UKZN, NMU, CPUT, TUT, DUT, UFS, UNIVEN, SPU, WSU, Rhodes, TVET colleges and more.",
+    "Check your APS score and instantly see which South African university programs you qualify for. Free, fast, and mobile-friendly. Covers UCT, Wits, UP, UJ, Stellenbosch, UNISA, NWU, UKZN, NMU, CPUT, TUT, DUT, UFS, UNIVEN, SPU, WSU, Rhodes, UWC, TVET colleges and more.",
   keywords: [
     "APS calculator",
     "South Africa university",
@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     "Sol Plaatje University",
     "WSU requirements",
     "Rhodes University",
+    "UWC requirements",
     "TVET college requirements",
   ],
   openGraph: {

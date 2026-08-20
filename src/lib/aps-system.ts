@@ -49,6 +49,7 @@ export const UNIVERSITY_LOGOS: Record<string, string> = {
   spu: "https://www.google.com/s2/favicons?domain=spu.ac.za&sz=128",
   wsu: "https://www.google.com/s2/favicons?domain=wsu.ac.za&sz=128",
   rhodes: "https://www.google.com/s2/favicons?domain=ru.ac.za&sz=128",
+  uwc: "https://www.google.com/s2/favicons?domain=uwc.ac.za&sz=128",
   eeetvet: "https://www.google.com/s2/favicons?domain=eec.edu.za&sz=128",
   coastalkzn: "https://www.google.com/s2/favicons?domain=coastalkzn.co.za&sz=128",
   southcape: "https://www.google.com/s2/favicons?domain=sccollege.co.za&sz=128",
