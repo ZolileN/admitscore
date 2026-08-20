@@ -175,6 +175,15 @@ export const APPLICATION_DEADLINES: ApplicationDeadline[] = [
     note: "Highly selective — apply early for residence consideration.",
   },
   {
+    id: "uwc",
+    title: "UWC undergraduate applications",
+    institution: "University of the Western Cape",
+    opens: "1 April 2026",
+    closes: "30 September 2026",
+    category: "university",
+    note: "Free to apply. Dentistry and oral health programmes close 31 August.",
+  },
+  {
     id: "falsebay",
     title: "False Bay TVET applications",
     institution: "False Bay TVET College",
