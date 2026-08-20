@@ -44,4 +44,13 @@ export const UNIVERSITY_LOGOS: Record<string, string> = {
   tut: "https://www.google.com/s2/favicons?domain=tut.ac.za&sz=128",
   dut: "https://www.google.com/s2/favicons?domain=dut.ac.za&sz=128",
   falsebay: "https://www.google.com/s2/favicons?domain=falsebay.org.za&sz=128",
+  ufs: "https://www.google.com/s2/favicons?domain=ufs.ac.za&sz=128",
+  univen: "https://www.google.com/s2/favicons?domain=univen.ac.za&sz=128",
+  spu: "https://www.google.com/s2/favicons?domain=spu.ac.za&sz=128",
+  eeetvet: "https://www.google.com/s2/favicons?domain=eec.edu.za&sz=128",
+  coastalkzn: "https://www.google.com/s2/favicons?domain=coastalkzn.co.za&sz=128",
+  southcape: "https://www.google.com/s2/favicons?domain=sccollege.co.za&sz=128",
+  orbit: "https://www.google.com/s2/favicons?domain=orbit.co.za&sz=128",
+  umfolozi: "https://www.google.com/s2/favicons?domain=umfolozicollege.co.za&sz=128",
+  westcoast: "https://www.google.com/s2/favicons?domain=westcoastcollege.co.za&sz=128",
 };

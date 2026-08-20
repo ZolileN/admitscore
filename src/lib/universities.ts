@@ -12,6 +12,15 @@ export const UNIVERSITY_ABBREVIATIONS: Record<string, string> = {
   tut: "TUT",
   dut: "DUT",
   falsebay: "False Bay TVET",
+  ufs: "UFS",
+  univen: "UNIVEN",
+  spu: "SPU",
+  eeetvet: "EEC TVET",
+  coastalkzn: "Coastal KZN",
+  southcape: "South Cape TVET",
+  orbit: "Orbit TVET",
+  umfolozi: "Umfolozi TVET",
+  westcoast: "West Coast TVET",
 };
 
 export function getUniversityAbbreviation(slug: string, fallbackName: string) {
