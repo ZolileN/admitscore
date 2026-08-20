@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import ResultsProgramList from "@/components/ResultsProgramList";
+import PdfExportButton from "@/components/PdfExportButton";
+import MlkComputerCta from "@/components/MlkComputerCta";
 import { buildWhatsAppShareUrl, parseResultsParam } from "@/lib/results-url";
 import type { MatchResults } from "@/lib/types";
 
@@ -126,6 +128,7 @@ function ResultsContent() {
           <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary !py-2 !px-4 !text-xs no-underline">
             Share on WhatsApp
           </a>
+          <PdfExportButton results={results} />
           <button
             onClick={() => navigator.clipboard.writeText(shareUrl)}
             className="btn-secondary !py-2 !px-4 !text-xs"
@@ -177,8 +180,11 @@ function ResultsContent() {
         <ResultsProgramList programs={activePrograms} />
       )}
 
-      <div className="mt-8 text-center">
-        <Link href="/calculate" className="btn-secondary !text-sm no-underline">← Recalculate</Link>
+      <div className="mt-8 space-y-6">
+        <MlkComputerCta />
+        <div className="text-center">
+          <Link href="/calculate" className="btn-secondary !text-sm no-underline">← Recalculate</Link>
+        </div>
       </div>
     </div>
   );
@@ -187,15 +193,6 @@ function ResultsContent() {
 export default function ResultsPage() {
   return (
     <main className="min-h-screen">
-      <nav className="sticky top-0 z-50 px-4 py-3" style={{ background: "rgba(6,8,15,0.9)", backdropFilter: "blur(16px)", borderBottom: "1px solid var(--border-subtle)" }}>
-        <div className="container-app flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 no-underline">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center font-bold text-white text-xs" style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>A</div>
-            <span className="text-base font-bold" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')", color: "var(--text-primary)" }}>AdmitScore</span>
-          </Link>
-          <Link href="/calculate" className="btn-primary !py-2 !px-4 !text-xs no-underline">New Calculation</Link>
-        </div>
-      </nav>
       <Suspense fallback={
         <div className="container-app pt-8 space-y-4">
           <div className="skeleton h-10 w-48 mb-2" />

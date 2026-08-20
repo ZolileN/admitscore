@@ -15,6 +15,12 @@ export function percentageToLevel(mark: number): number {
   return 1;
 }
 
+/** UKZN awards 8 APS points for 90%+ (other unis cap at 7). */
+export function percentageToApsPoints(mark: number, useUkznBonus = false): number {
+  if (useUkznBonus && mark >= 90) return 8;
+  return percentageToLevel(mark);
+}
+
 /**
  * Convert a 7-point level back to its minimum percentage threshold.
  */
@@ -36,6 +42,7 @@ export type LifeOrientationRule = "exclude" | "halve" | "cap4" | "include";
 export interface APSOptions {
   lifeOrientationRule?: LifeOrientationRule;
   lifeOrientationSubjectId?: number;
+  useUkznBonus?: boolean;
 }
 
 export interface SubjectMark {
@@ -56,11 +63,11 @@ export function calculateAPS(
   marks: SubjectMark[],
   options: APSOptions = {}
 ): number {
-  const { lifeOrientationRule = "exclude", lifeOrientationSubjectId } = options;
+  const { lifeOrientationRule = "exclude", lifeOrientationSubjectId, useUkznBonus = false } = options;
 
   let levels = marks.map((m) => ({
     subjectId: m.subjectId,
-    level: percentageToLevel(m.mark),
+    level: percentageToApsPoints(m.mark, useUkznBonus),
     isLO: m.subjectId === lifeOrientationSubjectId,
   }));
 
@@ -88,8 +95,9 @@ export function calculateAPS(
 /**
  * Get the maximum possible APS (all 7s).
  */
-export function getMaxAPS(rule: LifeOrientationRule = "exclude"): number {
-  if (rule === "exclude") return 42; // 6 × 7
-  if (rule === "cap4") return 46; // 6 × 7 + 4
-  return 49; // 7 × 7
+export function getMaxAPS(rule: LifeOrientationRule = "exclude", useUkznBonus = false): number {
+  const top = useUkznBonus ? 8 : 7;
+  if (rule === "exclude") return 6 * top;
+  if (rule === "cap4") return 6 * top + 4;
+  return 7 * top;
 }

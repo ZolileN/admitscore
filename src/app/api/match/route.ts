@@ -3,8 +3,9 @@ import { db } from "@/db";
 import { programs, programApsRules, programSubjectRules, universities, subjects } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { calculateAPS, percentageToLevel } from "@/lib/aps";
-import { getLifeOrientationRule } from "@/lib/aps-system";
+import { getLifeOrientationRule, usesUkznBonusScoring } from "@/lib/aps-system";
 import { categorizeMatch, evaluateSubjectRequirements } from "@/lib/match-logic";
+import { getBursaryNote } from "@/lib/bursaries";
 import { matchRequestSchema } from "@/lib/validators";
 import type { ProgramMatch, MatchResults } from "@/lib/types";
 
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
       const programStudentAps = calculateAPS(subjectMarks, {
         lifeOrientationRule: loRule,
         lifeOrientationSubjectId: loId,
+        useUkznBonus: usesUkznBonusScoring(uni.apsSystemType),
       });
 
       const requiredAps = apsRule.minApsScore;
@@ -106,6 +108,8 @@ export async function POST(request: NextRequest) {
         subjectRequirements: evaluation.subjectReqs,
         category,
         nearMissSummary: category === "near" ? evaluation.subjectReqs.filter((req) => !req.met).slice(0, 3).map((req) => `${req.subjectName} (need L${req.minLevel}${req.studentLevel !== null ? `, yours L${req.studentLevel}` : ""})`).join(" · ") || (apsGap > 0 ? `Need ${apsGap} more APS points` : null) : null,
+        bursaryNote: program.bursaryNote ?? getBursaryNote(program.faculty, uni.slug),
+        nsfasEligible: program.nsfasEligible,
       };
 
       if (category === "safe") safeBets.push(match);

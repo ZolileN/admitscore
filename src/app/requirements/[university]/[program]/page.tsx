@@ -1,10 +1,12 @@
 import Link from "next/link";
 import UnisaNotice from "@/components/UnisaNotice";
+import DataFreshnessBadge from "@/components/DataFreshnessBadge";
 import { db } from "@/db";
 import { universities, programs, programApsRules, programSubjectRules, subjects } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { APS_LEVEL_COLORS } from "@/lib/constants";
+import { getMaxApsForUniversity } from "@/lib/aps-system";
 import type { Metadata } from "next";
 
 interface Props {
@@ -66,6 +68,14 @@ export default async function ProgramPage({ params }: Props) {
     orGroupsMap.set(r.groupId!, group);
   }
 
+  const maxAps = getMaxApsForUniversity(uni.slug, uni.apsSystemType);
+
+  const qualificationLabel =
+    prog.qualificationType === "degree" ? "Degree" :
+    prog.qualificationType === "diploma" ? "Diploma" :
+    prog.qualificationType === "higher_certificate" ? "Higher Certificate" :
+    "Extended Degree";
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "EducationalOccupationalProgram",
@@ -83,16 +93,6 @@ export default async function ProgramPage({ params }: Props) {
 
   return (
     <main className="min-h-screen">
-      <nav className="sticky top-0 z-50 px-4 py-3" style={{ background: "rgba(6,8,15,0.9)", backdropFilter: "blur(16px)", borderBottom: "1px solid var(--border-subtle)" }}>
-        <div className="container-app flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 no-underline">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center font-bold text-white text-xs" style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>A</div>
-            <span className="text-base font-bold" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')", color: "var(--text-primary)" }}>AdmitScore</span>
-          </Link>
-          <Link href="/calculate" className="btn-primary !py-2 !px-4 !text-xs no-underline">Check My APS</Link>
-        </div>
-      </nav>
-
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <section className="container-app pt-8 pb-4">
@@ -104,7 +104,9 @@ export default async function ProgramPage({ params }: Props) {
           <span style={{ color: "var(--text-primary)" }}>{prog.name}</span>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')" }}>
+        <DataFreshnessBadge date={prog.dataUpdatedAt ?? undefined} />
+
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2 mt-4" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')" }}>
           {prog.name}
         </h1>
         <p style={{ color: "var(--text-secondary)" }} className="text-base mb-2">
@@ -112,12 +114,23 @@ export default async function ProgramPage({ params }: Props) {
         </p>
         <div className="flex items-center gap-3 mb-8 flex-wrap">
           <span className="badge" style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
-            {prog.qualificationType === "degree" ? "Degree" : prog.qualificationType === "diploma" ? "Diploma" : "Extended Degree"}
+            {qualificationLabel}
           </span>
           <span className="badge" style={{ background: "var(--bg-tertiary)", color: "var(--text-secondary)", border: "1px solid var(--border-subtle)" }}>
             {prog.durationYears} Year{prog.durationYears !== 1 ? "s" : ""}
           </span>
+          {prog.nsfasEligible && (
+            <span className="badge" style={{ background: "rgba(16,185,129,0.1)", color: "var(--accent-emerald)", border: "1px solid rgba(16,185,129,0.25)" }}>
+              NSFAS eligible
+            </span>
+          )}
         </div>
+
+        {prog.bursaryNote && (
+          <p className="text-sm mb-6 max-w-2xl px-4 py-3 rounded-lg" style={{ color: "var(--text-secondary)", background: "var(--bg-secondary)", border: "1px solid var(--border-subtle)" }}>
+            {prog.bursaryNote}
+          </p>
+        )}
 
         {prog.description && (
           <p className="text-sm mb-6 max-w-2xl" style={{ color: "var(--text-secondary)" }}>
@@ -141,11 +154,11 @@ export default async function ProgramPage({ params }: Props) {
               </div>
               <div className="text-5xl font-bold" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')", color: "var(--accent-blue)" }}>
                 {apsRule.minApsScore}
-                <span className="text-lg ml-1" style={{ color: "var(--text-muted)" }}>/42</span>
+                <span className="text-lg ml-1" style={{ color: "var(--text-muted)" }}>/{maxAps}</span>
               </div>
               <div className="mt-2 progress-bar">
                 <div className="progress-bar-fill" style={{
-                  width: `${(apsRule.minApsScore / 42) * 100}%`,
+                  width: `${(apsRule.minApsScore / maxAps) * 100}%`,
                   background: "linear-gradient(90deg, var(--accent-blue), var(--accent-purple))",
                 }} />
               </div>

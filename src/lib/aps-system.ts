@@ -1,4 +1,5 @@
 import type { LifeOrientationRule } from "./aps";
+import { getMaxAPS } from "./aps";
 
 const LO_RULE_BY_UNIVERSITY: Record<string, LifeOrientationRule> = {
   wits: "cap4",
@@ -16,12 +17,15 @@ export function getLifeOrientationRule(universitySlug: string, apsSystemType?: s
   return "exclude";
 }
 
+export function usesUkznBonusScoring(apsSystemType?: string): boolean {
+  return apsSystemType === "ukzn_bonus";
+}
+
 export function getMaxApsForUniversity(universitySlug: string, apsSystemType?: string) {
   const rule = getLifeOrientationRule(universitySlug, apsSystemType);
-  if (rule === "exclude") return 42;
-  if (rule === "cap4") return 46;
-  return 49;
+  return getMaxAPS(rule, usesUkznBonusScoring(apsSystemType));
 }
+
 
 export const UNISA_ADMISSION_NOTE =
   "Meeting the minimum APS does not guarantee admission. UNISA programmes are space-limited and competitive.";
@@ -33,4 +37,11 @@ export const UNIVERSITY_LOGOS: Record<string, string> = {
   uj: "https://www.google.com/s2/favicons?domain=uj.ac.za&sz=128",
   stellenbosch: "https://www.google.com/s2/favicons?domain=sun.ac.za&sz=128",
   unisa: "https://www.google.com/s2/favicons?domain=unisa.ac.za&sz=128",
+  nwu: "https://www.google.com/s2/favicons?domain=nwu.ac.za&sz=128",
+  ukzn: "https://www.google.com/s2/favicons?domain=ukzn.ac.za&sz=128",
+  nmu: "https://www.google.com/s2/favicons?domain=mandela.ac.za&sz=128",
+  cput: "https://www.google.com/s2/favicons?domain=cput.ac.za&sz=128",
+  tut: "https://www.google.com/s2/favicons?domain=tut.ac.za&sz=128",
+  dut: "https://www.google.com/s2/favicons?domain=dut.ac.za&sz=128",
+  falsebay: "https://www.google.com/s2/favicons?domain=falsebay.org.za&sz=128",
 };

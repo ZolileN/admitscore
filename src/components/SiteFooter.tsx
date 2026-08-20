@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MLK_COMPUTER_URL } from "@/lib/constants";
 
 export default function SiteFooter() {
   return (
@@ -24,13 +25,13 @@ export default function SiteFooter() {
           <p>
             A product of{" "}
             <Link
-              href="https://mlkcomputer.com"
+              href={MLK_COMPUTER_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="no-underline transition-colors hover:opacity-80"
               style={{ color: "var(--text-secondary)" }}
             >
-              MLK Computer
+              MLK Computer Consulting
             </Link>
           </p>
         </div>
