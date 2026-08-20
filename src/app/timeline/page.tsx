@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 export default function TimelinePage() {
   const grouped = {
     university: APPLICATION_DEADLINES.filter((d) => d.category === "university"),
+    tvet: APPLICATION_DEADLINES.filter((d) => d.category === "tvet"),
     funding: APPLICATION_DEADLINES.filter((d) => d.category === "funding"),
     general: APPLICATION_DEADLINES.filter((d) => d.category === "general"),
   };
@@ -27,10 +28,16 @@ export default function TimelinePage() {
           </p>
         </div>
 
-        {(["university", "funding", "general"] as const).map((category) => (
+        {(["university", "tvet", "funding", "general"] as const).map((category) => (
           <section key={category}>
             <h2 className="text-lg font-bold mb-4 capitalize" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')" }}>
-              {category === "university" ? "Universities" : category === "funding" ? "Funding" : "General"}
+              {category === "university"
+                ? "Universities"
+                : category === "tvet"
+                  ? "TVET colleges"
+                  : category === "funding"
+                    ? "Funding"
+                    : "General"}
             </h2>
             <div className="space-y-3">
               {grouped[category].map((item) => (
