@@ -21,12 +21,29 @@ function getSubjectId(slug: string): number {
 }
 const subjectMap = new Map<string, number>();
 
+async function verifyDatabaseConnection() {
+  if (!process.env.TURSO_DATABASE_URL) return;
+
+  try {
+    await db.select({ id: schema.subjects.id }).from(schema.subjects).limit(1);
+  } catch (error) {
+    console.error("\n❌ Cannot connect to Turso database.\n");
+    console.error("   Your TURSO_AUTH_TOKEN may be expired or invalid (HTTP 404 is common).");
+    console.error("   Fix: create a fresh token in the Turso dashboard, update .env.local / Vercel env vars, then retry.\n");
+    console.error("   Or seed locally without Turso: unset TURSO_DATABASE_URL and run npm run db:seed\n");
+    throw error;
+  }
+}
+
 async function seed() {
   console.log(`🌱 Seeding AdmitScore database (${resetMode ? "reset" : "incremental"})...\n`);
 
   if (!process.env.TURSO_DATABASE_URL) {
     mkdirSync("./data", { recursive: true });
     console.log("ℹ️  Using local database at ./data/admitscore.db\n");
+  } else {
+    await verifyDatabaseConnection();
+    console.log("✓ Turso connection verified\n");
   }
 
   if (resetMode) {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MLK_COMPUTER_URL } from "@/lib/constants";
+import { MLK_COMPUTER_CONTACT_URL } from "@/lib/constants";
 
 export default function MlkComputerCta() {
   return (
@@ -9,19 +9,19 @@ export default function MlkComputerCta() {
     >
       <div>
         <p className="text-sm font-semibold mb-1" style={{ color: "var(--text-primary)" }}>
-          Need a laptop for university?
+          Getting ready for university?
         </p>
         <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
           MLK Computer Consulting supplies reliable student laptops and IT support across South Africa.
         </p>
       </div>
       <Link
-        href={MLK_COMPUTER_URL}
+        href={MLK_COMPUTER_CONTACT_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="btn-primary !text-sm !px-6 !py-3 no-underline whitespace-nowrap shrink-0"
       >
-        Visit MLK Computer Consulting
+        Contact MLK Computer Consulting
       </Link>
     </div>
   );

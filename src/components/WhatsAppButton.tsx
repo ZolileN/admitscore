@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { MLK_COMPUTER_URL } from "@/lib/constants";
 import { buildWhatsAppContactUrl } from "@/lib/whatsapp";
 
 export default function WhatsAppButton() {
