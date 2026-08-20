@@ -134,7 +134,7 @@ function AdminAnalyticsContent() {
       </div>
 
       <p className="text-sm mt-8" style={{ color: "var(--text-muted)" }}>
-        Also enable Plausible (`NEXT_PUBLIC_PLAUSIBLE_DOMAIN`) and Vercel Analytics on your deployment for referrer, device, and Web Vitals data.
+        View traffic in your Umami Cloud dashboard. Vercel Analytics covers Web Vitals on deploy.
       </p>
     </main>
   );

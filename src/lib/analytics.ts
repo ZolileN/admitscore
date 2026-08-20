@@ -15,7 +15,12 @@ export type AnalyticsProperties = Record<string, string | number | boolean>;
 
 declare global {
   interface Window {
-    plausible?: (event: string, options?: { props?: AnalyticsProperties }) => void;
+    umami?: {
+      track: (
+        event: string | ((props: Record<string, unknown>) => Record<string, unknown>),
+        data?: AnalyticsProperties
+      ) => void;
+    };
   }
 }
 
@@ -50,6 +55,11 @@ function sendToFirstParty(
   }).catch(() => {});
 }
 
+export function trackUmamiPageView(url: string) {
+  if (typeof window === "undefined" || !window.umami) return;
+  window.umami.track((props) => ({ ...props, url }));
+}
+
 export function trackEvent(
   eventName: AnalyticsEventName,
   properties?: AnalyticsProperties
@@ -63,8 +73,8 @@ export function trackEvent(
     track(eventName, properties);
   }).catch(() => {});
 
-  if (window.plausible) {
-    window.plausible(eventName.replaceAll("_", " "), { props: properties });
+  if (window.umami && eventName !== "page_view") {
+    window.umami.track(eventName, properties);
   }
 
   sendToFirstParty(eventName, path, referrer, properties);
