@@ -1,6 +1,7 @@
 "use client";
 
 import type { MatchResults } from "@/lib/types";
+import { bucketAps, bucketCount, trackEvent } from "@/lib/analytics";
 
 interface PdfExportButtonProps {
   results: MatchResults;
@@ -9,6 +10,11 @@ interface PdfExportButtonProps {
 
 export default function PdfExportButton({ results, className = "" }: PdfExportButtonProps) {
   const exportPdf = () => {
+    trackEvent("pdf_export", {
+      aps_bucket: bucketAps(results.studentAps),
+      matches: bucketCount(results.totalPrograms),
+    });
+
     const lines: string[] = [
       "AdmitScore — Your University Match Report",
       `APS Score: ${results.studentAps}/42`,

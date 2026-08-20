@@ -104,3 +104,14 @@ export const programSubjectRulesRelations = relations(
     }),
   })
 );
+
+// ─── Analytics (anonymous usage events, no PII) ────────────
+export const analyticsEvents = sqliteTable("analytics_events", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  eventName: text("event_name").notNull(),
+  path: text("path"),
+  referrer: text("referrer"),
+  properties: text("properties"),
+  day: text("day").notNull(),
+  createdAt: text("created_at").notNull(),
+});

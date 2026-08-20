@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { buildWhatsAppContactUrl } from "@/lib/whatsapp";
+import { trackEvent } from "@/lib/analytics";
 
 export default function WhatsAppButton() {
   return (
@@ -7,6 +10,7 @@ export default function WhatsAppButton() {
       href={buildWhatsAppContactUrl()}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => trackEvent("whatsapp_click", { location: "floating_button" })}
       className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold text-white no-underline shadow-lg transition-transform hover:scale-105"
       style={{ background: "#25D366", boxShadow: "0 8px 24px rgba(37,211,102,0.35)" }}
       aria-label="Chat with MLK Computer Consulting on WhatsApp"

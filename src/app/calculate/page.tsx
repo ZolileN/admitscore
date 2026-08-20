@@ -6,6 +6,7 @@ import { NSC_SUBJECTS } from "@/lib/subjects";
 import { percentageToLevel } from "@/lib/aps";
 import { APS_LEVEL_COLORS } from "@/lib/constants";
 import { encodeResultsParam, loadMarksFromStorage, saveMarksToStorage } from "@/lib/results-url";
+import { bucketAps, trackEvent } from "@/lib/analytics";
 
 interface SubjectEntry {
   id: string;
@@ -147,6 +148,11 @@ export default function CalculatePage() {
         mark: Number(entry.mark),
       }))
     );
+
+    trackEvent("aps_calculated", {
+      aps_bucket: bucketAps(currentAPS),
+      subject_count: validSubjects.length,
+    });
 
     startTransition(() => {
       router.push(`/results?s=${encodeURIComponent(payload)}`);

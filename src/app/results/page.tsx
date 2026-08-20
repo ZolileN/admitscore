@@ -8,6 +8,7 @@ import PdfExportButton from "@/components/PdfExportButton";
 import MlkComputerCta from "@/components/MlkComputerCta";
 import { buildWhatsAppShareUrl, parseResultsParam } from "@/lib/results-url";
 import type { MatchResults } from "@/lib/types";
+import { trackEvent } from "@/lib/analytics";
 
 function ResultsContent() {
   const searchParams = useSearchParams();
@@ -125,12 +126,21 @@ function ResultsContent() {
           <div className="progress-bar-fill" style={{ width: `${(results.studentAps / 42) * 100}%`, background: "linear-gradient(90deg, var(--accent-blue), var(--accent-purple))" }} />
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary !py-2 !px-4 !text-xs no-underline">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => trackEvent("share_whatsapp", { location: "results" })}
+            className="btn-secondary !py-2 !px-4 !text-xs no-underline"
+          >
             Share on WhatsApp
           </a>
           <PdfExportButton results={results} />
           <button
-            onClick={() => navigator.clipboard.writeText(shareUrl)}
+            onClick={() => {
+              navigator.clipboard.writeText(shareUrl);
+              trackEvent("copy_results_link");
+            }}
             className="btn-secondary !py-2 !px-4 !text-xs"
           >
             Copy link
