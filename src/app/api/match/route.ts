@@ -7,7 +7,7 @@ import { getLifeOrientationRule, usesUkznBonusScoring } from "@/lib/aps-system";
 import { categorizeMatch, evaluateSubjectRequirements } from "@/lib/match-logic";
 import { getBursaryNote } from "@/lib/bursaries";
 import { matchRequestSchema } from "@/lib/validators";
-import { bucketAps, bucketCount } from "@/lib/analytics";
+import { bucketAps, bucketCount } from "@/lib/analytics-shared";
 import { recordAnalyticsEvent } from "@/lib/analytics-server";
 import type { ProgramMatch, MatchResults } from "@/lib/types";
 
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
         near_bucket: bucketCount(nearMisses.length),
         total_matches: bucketCount(result.totalPrograms),
       },
-    }).catch((error) => console.error("Analytics record failed:", error));
+    });
 
     return NextResponse.json(result);
   } catch (error) {
