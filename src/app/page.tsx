@@ -10,22 +10,8 @@ export default async function HomePage() {
 
   return (
     <main className="min-h-screen">
-      {/* ── Navigation ──────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-4 py-4" style={{ background: "rgba(6,8,15,0.8)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-        <div className="container-wide flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 no-underline">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white text-sm" style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>A</div>
-            <span className="text-lg font-bold" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')", color: "var(--text-primary)" }}>AdmitScore</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/requirements" className="text-sm no-underline hidden sm:inline-block" style={{ color: "var(--text-secondary)" }}>Browse Programs</Link>
-            <Link href="/calculate" className="btn-primary !py-2.5 !px-5 !text-sm">Check My APS</Link>
-          </div>
-        </div>
-      </nav>
-
       {/* ── Hero Section ────────────────────────────────── */}
-      <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
+      <section className="relative pt-16 pb-20 sm:pt-24 sm:pb-28 overflow-hidden">
         <div className="absolute top-20 left-1/4 w-72 h-72 rounded-full opacity-20 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #3b82f6, transparent)" }} />
         <div className="absolute bottom-10 right-1/4 w-56 h-56 rounded-full opacity-15 blur-3xl pointer-events-none" style={{ background: "radial-gradient(circle, #8b5cf6, transparent)" }} />
 

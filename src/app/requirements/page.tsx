@@ -20,16 +20,6 @@ export default async function RequirementsPage() {
 
   return (
     <main className="min-h-screen">
-      <nav className="sticky top-0 z-50 px-4 py-3" style={{ background: "rgba(6,8,15,0.9)", backdropFilter: "blur(16px)", borderBottom: "1px solid var(--border-subtle)" }}>
-        <div className="container-wide flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 no-underline">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center font-bold text-white text-xs" style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>A</div>
-            <span className="text-base font-bold" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')", color: "var(--text-primary)" }}>AdmitScore</span>
-          </Link>
-          <Link href="/calculate" className="btn-primary !py-2 !px-4 !text-xs no-underline">Check My APS</Link>
-        </div>
-      </nav>
-
       <section className="container-wide pt-8 pb-4">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')" }}>
           University Requirements

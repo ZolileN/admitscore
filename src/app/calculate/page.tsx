@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { NSC_SUBJECTS } from "@/lib/subjects";
 import { percentageToLevel } from "@/lib/aps";
 import { APS_LEVEL_COLORS } from "@/lib/constants";
@@ -156,17 +155,6 @@ export default function CalculatePage() {
 
   return (
     <main className="min-h-screen pb-32">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 px-4 py-3" style={{ background: "rgba(6,8,15,0.9)", backdropFilter: "blur(16px)", borderBottom: "1px solid var(--border-subtle)" }}>
-        <div className="container-app flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 no-underline">
-            <div className="w-7 h-7 rounded-md flex items-center justify-center font-bold text-white text-xs" style={{ background: "linear-gradient(135deg, #3b82f6, #8b5cf6)" }}>A</div>
-            <span className="text-base font-bold" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')", color: "var(--text-primary)" }}>AdmitScore</span>
-          </Link>
-          <Link href="/requirements" className="text-sm no-underline" style={{ color: "var(--text-secondary)" }}>Browse</Link>
-        </div>
-      </nav>
-
       {/* Header */}
       <section className="container-app pt-8 pb-6">
         <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ fontFamily: "var(--font-heading, 'Space Grotesk')" }}>
